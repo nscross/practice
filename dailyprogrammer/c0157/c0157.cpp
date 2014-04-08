@@ -12,7 +12,11 @@ const char kNewlineTile = '\n';
 const char kNumberOfRows = 3;
 const char kNumberOfColumns = 3;
 const char kNumberOfTilesToWin = 3;
-    
+
+bool IsValidCharacter(const char input);
+bool IsReturnCharacter(const char input);
+int CalculateWinningLocation(const char* board, const char player_tile, char* play_next_locations);
+
 bool IsValidCharacter(const char input)
 {    
     bool is_valid_char = false;
