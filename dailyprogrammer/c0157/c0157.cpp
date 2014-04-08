@@ -48,7 +48,7 @@ bool IsReturnCharacter(const char input)
     return is_valid_char;
 }
 
-int CalculateWinningLocation(const char* board, const char players_turn, char* win_locations)
+int CalculateWinningLocation(const char* board, const char player_tile, char* play_next_locations)
 {
     int number_of_winning = 0;
     // check rows
@@ -60,7 +60,7 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         for(int col_ndx = 0; col_ndx < kNumberOfColumns; col_ndx++)
         {
             char spot = *(board+(row_ndx*kNumberOfColumns) + col_ndx);
-            if (spot == players_turn)
+            if (spot == player_tile)
             {
                 num_player_tiles++;
             }
@@ -78,8 +78,8 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         if (num_player_tiles == kNumberOfTilesToWin - 1
             && blank_tile_col != -1)
         {
-            *(win_locations+(number_of_winning*2)) = row_ndx;
-            *(win_locations+(number_of_winning*2)+1) = blank_tile_col;            
+            *(play_next_locations+(number_of_winning*2)) = row_ndx;
+            *(play_next_locations+(number_of_winning*2)+1) = blank_tile_col;            
             number_of_winning++;
         }
     }
@@ -93,7 +93,7 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         for(int row_ndx = 0; row_ndx < kNumberOfRows; row_ndx++)
         {        
             char spot = *(board+(row_ndx*kNumberOfColumns) + col_ndx);
-            if (spot == players_turn)
+            if (spot == player_tile)
             {
                 num_player_tiles++;
             }
@@ -111,8 +111,8 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         if (num_player_tiles == kNumberOfTilesToWin - 1
             && blank_tile_row != -1)
         {
-            *(win_locations+(number_of_winning*2)) = blank_tile_row;
-            *(win_locations+(number_of_winning*2)+1) = col_ndx;            
+            *(play_next_locations+(number_of_winning*2)) = blank_tile_row;
+            *(play_next_locations+(number_of_winning*2)+1) = col_ndx;            
             number_of_winning++;
         }
     }
@@ -124,7 +124,7 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
     for(int row_ndx = 0, col_ndx = 0; row_ndx < kNumberOfRows; row_ndx++, col_ndx++)
     {
         char spot = *(board+(row_ndx*kNumberOfColumns) + col_ndx);
-        if (spot == players_turn)
+        if (spot == player_tile)
         {
             num_player_tiles++;
         }
@@ -144,8 +144,8 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         && blank_tile_row != -1
         && blank_tile_col != -1)
     {
-        *(win_locations+(number_of_winning*2)) = blank_tile_row;
-        *(win_locations+(number_of_winning*2)+1) = blank_tile_col;            
+        *(play_next_locations+(number_of_winning*2)) = blank_tile_row;
+        *(play_next_locations+(number_of_winning*2)+1) = blank_tile_col;            
         number_of_winning++;
     } 
 
@@ -155,7 +155,7 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
     for(int row_ndx = 0, col_ndx = kNumberOfColumns - 1; row_ndx < kNumberOfRows; row_ndx++, col_ndx--)
     {
         char spot = *(board+(row_ndx*kNumberOfColumns) + col_ndx);
-        if (spot == players_turn)
+        if (spot == player_tile)
         {
             num_player_tiles++;
         }
@@ -175,8 +175,8 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
         && blank_tile_row != -1
         && blank_tile_col != -1)
     {
-        *(win_locations+(number_of_winning*2)) = blank_tile_row;
-        *(win_locations+(number_of_winning*2)+1) = blank_tile_col;            
+        *(play_next_locations+(number_of_winning*2)) = blank_tile_row;
+        *(play_next_locations+(number_of_winning*2)+1) = blank_tile_col;            
         number_of_winning++;
     }        
     
@@ -187,18 +187,18 @@ int CalculateWinningLocation(const char* board, const char players_turn, char* w
 int main (int argc, char *argv[])
 {
     char board[kNumberOfRows][kNumberOfColumns];    
-    char players_turn;
-    
-    
-    // get input
-    
+    char player_tile;
+    char enemy_tile;
+        
+    // get input    
     int input_char = fgetc(stdin);
     
     if (input_char != EOF)
     {
         if (IsValidCharacter(input_char))
         {
-            players_turn = input_char;
+            player_tile = input_char;            
+            enemy_tile = (input_char == kXTile) ? kOTile : kXTile;            
         }
         else
         {
@@ -235,37 +235,58 @@ int main (int argc, char *argv[])
         
     // calculate if there's a winning move
     int number_of_wins = 0;
-    char win_locations[5][2];
+    int number_of_blocks = 0;
+    char play_next_locations[5][2];
     
     number_of_wins = CalculateWinningLocation((const char*)&board[0][0],
-        players_turn, (char*)&win_locations[0][0]);
+        player_tile, (char*)&play_next_locations[0][0]);
+    
+    if (number_of_wins == 0)
+    {        
+        number_of_blocks = CalculateWinningLocation((const char*)&board[0][0],
+        enemy_tile, (char*)&play_next_locations[0][0]);
+    }
+    
+    char* play_type = NULL;
+    char win_string[] = "Winning";
+    char block_string[] = "Block";
+    int number_of_solutions = 0;
     
     if (number_of_wins > 0)
     {       
         printf("%d winnings moves available.\n", number_of_wins);
-        
-        for(int ndx = 0; ndx < number_of_wins; ndx++)
-        {
-            printf("\nWinning Move #%d\n", ndx+1);
-            
-            board[win_locations[ndx][0]][win_locations[ndx][1]] = players_turn;
-            // display the winning move            
-            for (int row_ndx = 0; row_ndx < kNumberOfRows; row_ndx++)
-            {
-                for (int col_ndx = 0; col_ndx < kNumberOfColumns; col_ndx++)
-                {
-                    printf("%c", board[row_ndx][col_ndx]);                
-                }
-                printf("\n");
-            }
-            
-            board[win_locations[ndx][0]][win_locations[ndx][1]] = kBlankTile;
-        }
+        play_type = &win_string[0];     
+        number_of_solutions = number_of_wins;        
+    }
+    else if(number_of_blocks > 0)
+    {
+        printf("%d blocking moves available.\n", number_of_blocks);
+        play_type = &block_string[0];     
+        number_of_solutions = number_of_blocks;                
     }
     else
     {
         printf("No Winning Move!\n");
     }
+    
+    for(int ndx = 0; ndx < number_of_solutions; ndx++)
+    {
+        printf("\n%s Move #%d\n", play_type, ndx+1);
+        
+        board[play_next_locations[ndx][0]][play_next_locations[ndx][1]] = player_tile;
+                    
+        for (int row_ndx = 0; row_ndx < kNumberOfRows; row_ndx++)
+        {
+            for (int col_ndx = 0; col_ndx < kNumberOfColumns; col_ndx++)
+            {
+                printf("%c", board[row_ndx][col_ndx]);                
+            }
+            printf("\n");
+        }
+        
+        board[play_next_locations[ndx][0]][play_next_locations[ndx][1]] = kBlankTile;
+    }
+    
     
     return 0;    
 }
