@@ -12,16 +12,18 @@ const char kNewlineTile = '\n';
 const char kNumberOfRows = 3;
 const char kNumberOfColumns = 3;
 const char kNumberOfTilesToWin = 3;
+const char kMaxWinningMoves = 2;
 
 bool IsValidCharacter(const char input);
 bool IsReturnCharacter(const char input);
 int CalculateWinningLocation(const char* board, const char player_tile, char* play_next_locations);
 
 bool IsValidCharacter(const char input)
-{    
+{   
+    char input_capitalized = toupper(input); 
     bool is_valid_char = false;
     
-    switch(input)
+    switch(input_capitalized)
     {
         case kXTile:
         case kOTile:
@@ -33,6 +35,40 @@ bool IsValidCharacter(const char input)
             break;
     };
     return is_valid_char;
+}
+
+bool IsLegalBoard(const char* board_input, const char player_tile)
+{   
+    int num_player_tiles = 0;
+    int num_enemy_tiles = 0; 
+    bool is_legal = false;
+    
+    for(int row_ndx = 0; row_ndx < kNumberOfRows; row_ndx++)
+    {   
+        for(int col_ndx = 0; col_ndx < kNumberOfColumns; col_ndx++)
+        {
+            char spot = *(board_input+(row_ndx*kNumberOfColumns) + col_ndx);
+            
+            if (spot == player_tile)
+            {
+                num_player_tiles++;
+            }
+            else if(spot == kBlankTile)
+            {
+                // ignore
+            }
+            else
+            {
+                num_enemy_tiles++;               
+            }            
+        }
+    }
+    if (num_player_tiles - num_enemy_tiles == 0 
+        ||  num_player_tiles - num_enemy_tiles == -1)
+    {
+        is_legal = true;
+    }
+    return is_legal;
 }
 
 bool IsReturnCharacter(const char input)
@@ -201,7 +237,7 @@ int main (int argc, char *argv[])
     {
         if (IsValidCharacter(input_char))
         {
-            player_tile = input_char;            
+            player_tile = toupper(input_char);            
             enemy_tile = (input_char == kXTile) ? kOTile : kXTile;            
         }
         else
@@ -221,7 +257,7 @@ int main (int argc, char *argv[])
         {
             if (IsValidCharacter(input_char))
             {
-                *(ptr_to_board+board_ndx) = input_char;                
+                *(ptr_to_board+board_ndx) = toupper(input_char);                
                 board_ndx++;                 
             }
             else if (!IsReturnCharacter(input_char))
@@ -235,12 +271,18 @@ int main (int argc, char *argv[])
             printf("Error: Not enough board characters: Need 3x3 matrix.\n");
             return(-1);
         }
-    }   
+    }
+
+    if(!IsLegalBoard((const char*)&board[0][0], player_tile))
+    {
+        printf("Error: Invalid Board.\n");
+        return(-1);
+    }
         
     // calculate if there's a winning move
     int number_of_wins = 0;
     int number_of_blocks = 0;
-    char play_next_locations[5][2];
+    char play_next_locations[kMaxWinningMoves][2];
     
     number_of_wins = CalculateWinningLocation((const char*)&board[0][0],
         player_tile, (char*)&play_next_locations[0][0]);
