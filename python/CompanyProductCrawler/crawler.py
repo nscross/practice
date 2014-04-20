@@ -11,7 +11,7 @@ def main(argv):
     hostname = ''
 
     try:
-        opts, args = getopt.getopt(argv, "hn",["hname="])
+        opts, args = getopt.getopt(argv, "hn:",["hname="])
     except getopt.GetoptError:
         print('usage: crawler.py -n <hostname>')
         sys.exit(2)
@@ -23,8 +23,22 @@ def main(argv):
         elif opt in ("-n", "--hname"):
             hostname = arg
             
-    print 'Hostname is "', hostname    
+    if hostname == '':
+        print('usage: crawler.py -n <hostname>')
+        sys.exit(2)
+    
+    if not hostname.endswith('/') :
+        hostname = hostname + '/'
+        
+    if not hostname.endswith('/') :
+        hostname = hostname + '/'
+        
+    if not hostname.startswith('http://') :
+        hostname = 'http://' + hostname
+    
+    print 'Hostname is ' + hostname    
 
+    
 
     list_of_files = ['jargon-wl\common.lst', 'jargon-wl\common-base.lst', 'jargon-wl\other.lst', 'jargon-wl\word.lst', 'jargon-wl\en_US.dic']
     for filename_to_open in list_of_files:
@@ -33,8 +47,8 @@ def main(argv):
                 sleep(random.randrange(1, 5))
                 try:
                     print('\nTrying ' + hostname + line)
-                    urllib2.urlopen('' + hostname + line)
-                    print('' + hostname + line.rstrip('\n') + 'exists')
+                    urllib2.urlopen(hostname + line)
+                    print(hostname + line.rstrip('\n') + 'exists')
                 except urllib2.HTTPError, e:
                     print(e.code )
                 except urllib2.URLError, e:
