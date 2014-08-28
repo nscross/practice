@@ -17,18 +17,15 @@ void foo(const char* input)
     
     printf("My stack looks like:\n%p\n%p\n%p\n%p\n%p\n%p\n\n");
 
-    fflush(stdout);
     strcpy(buf, input);
     printf("%s\n", buf);
 
     printf("Now the stack looks like:\n%p\n%p\n%p\n%p\n%p\n%p\n\n");
-    fflush(stdout);
 }
 
 void bar(void)
 {
     printf("Augh! I've been hacked!\n");
-    fflush(stdout);
 }
 
 int main(int argc, char* argv[])
@@ -36,9 +33,8 @@ int main(int argc, char* argv[])
     //Blatant cheating to make life easier on myself
     printf("Address of foo = %p\n", foo);
     printf("Address of bar = %p\n", bar);
-    fflush(stdout);
     if (argc != 2) 
- {
+ 	{
         printf("Please supply a string as an argument!\n");
         return -1;
 	} 
