@@ -1,0 +1,7 @@
+compile with gcc StackOverrun.c -fno-stack-protector
+sudo echo 0 > /proc/sys/kernel/randomize_va_space
+use 1 to re-enable it
+
+then run perl HackOverflow, look at the addrs of bar, then edit HackOverflow.pl
+
+It took me a few iterations of the stack to find the return pointer location
